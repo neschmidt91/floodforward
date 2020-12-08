@@ -201,7 +201,7 @@ ggplot(data = bcq_daily) +
 ggplot(data = bcq_daily) +
   geom_point(aes(x = date, y = daily_avg_stage))
 
-### find maximum daily discharge for each year - use that to find recurrence intervals and probabilities
+### find maximum daily flood stage for each year - use that to find recurrence intervals and probabilities
 bcq_annual <- bcq_daily %>% 
   mutate(year = format(as.Date(date), "%Y")) %>% # make column for year
   group_by(year) %>% 
@@ -222,7 +222,8 @@ ggplot(data = bcq_annual) +
                  y = probability)) +
   geom_smooth(aes(x = annual_max,
                   y = probability),
-              method = "lm")
+              method = "lm")+
+  labs(title = "Chowchilla Flood Stage")
 
 # Hydrology for BHP Chowchilla 2010 - 2020 . This is Pool Evelvation Measured in Feet. Pool? Elevation is at 613
 bhp <- read_csv("BHP_chowchilla.csv") %>% 
@@ -329,5 +330,6 @@ ggplot(data = hiddendam_annual) +
                  y = probability)) +
   geom_smooth(aes(x = annual_max,
                   y = probability),
-              method = "lm")
+              method = "lm")+
+  labs(title = "Hidden Dam Discharge")
 
