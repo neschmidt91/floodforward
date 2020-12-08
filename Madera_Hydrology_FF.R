@@ -41,9 +41,6 @@ peakflow_friantdam_date <- peakflow_friantdam %>%
   mutate(date_new = lubridate::mdy(date))
 
 #If want to parse date further 
-sandiegor_parse_date <- sandiegor_date %>% 
-  mutate(obs_month = lubridate::month(date_new, label = TRUE),
-         obs_year = lubridate::year(date_new))
 
 ### Observations by day
 ggplot(sjr_willowcreek_date, aes(x = date_new, y = discharrge_m3_s))+
