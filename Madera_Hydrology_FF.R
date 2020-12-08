@@ -125,8 +125,6 @@ ggplot(data = fresno_abv_daily) +
              color = "red",
              fill = "red") 
 
-
-
 ggplot(data = fresno_blw_daily) +
   geom_point(aes(x = date, y = daily_avg_stage))
 
@@ -181,7 +179,8 @@ bcq_date <- bcq %>%
   mutate(
     date_new = lubridate::ymd_hms(date_time)
   ) %>% 
-  separate(date_new, into = c("date", "time"), sep= ' ', remove = FALSE)# helps to seperate date and time into 2 different columns
+  separate(date_new, into = c("date", "time"), sep= ' ', remove = FALSE) %>% # helps to seperate date and time into 2 different columns
+  filter(value >= 0 & value < 40)
 
 # BCQ Daily average and daily max stage (FEET)
 bcq_daily <- bcq_date %>%  
@@ -281,7 +280,8 @@ ggplot(data = bhp_annual) +
 # Hydrology for HIDDEN DAM (HID) (daily outflow in cfs) There is also information on river storage in Acre Feet.
 
 hidden_dam_2002_2020 <- read_csv("hiddendam_2.csv") %>% 
-  clean_names()
+  clean_names() %>% 
+  mutate(outflow_cfs = as.numeric(outflow_cfs))
 hidden_dam_2002_2020$outflow_cfs[hidden_dam_2002_2020$outflow_cfs == "--"] <- NA #changing -- to NA
 
 
@@ -312,18 +312,19 @@ ggplot(data = hiddendam_daily) +
 
 ### find maximum daily discharge for each year - use that to find recurrence intervals and probabilities
 hiddendam_annual <- hiddendam_daily %>% 
-  mutate(year = format(date_new,"%Y")) %>% # make column for year
+  mutate(year = format(as.Date(date_new), "%Y")) %>% # make column for year
   group_by(year) %>% 
   summarize(
     count = n(),
-    annual_max = max(daily_max_flow, na.rm = TRUE)) %>% 
-  mutate(rank_order = rank(- annual_max)) %>% ## assign rank to max flow 
+    annual_max = max(daily_max_flow, na.rm = TRUE)
+  ) %>% 
+  mutate(rank_order = rank(-annual_max)) %>% ## assign rank to max flow 
   arrange(rank_order) %>% 
   mutate(recurrence_int = (1+19)/rank_order) %>% ## RI = (1+[# of years])/[rank]
   mutate(probability = 1/recurrence_int) ## prob = 1/RI
 
 # plot probability vs discharge - if enough points, can fit a linear relationship to this and determine flood stages at any probability of occurring (like 100-year flood, etc.)
-ggplot(data = hiddendam_annual_rank) +
+ggplot(data = hiddendam_annual) +
   geom_point(aes(x = annual_max,
                  y = probability)) +
   geom_smooth(aes(x = annual_max,
